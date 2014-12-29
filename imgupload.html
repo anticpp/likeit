@@ -1,0 +1,124 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script type="text/javascript" src="resumable/resumable.js"></script>
+<style>
+.msgmain { width: 45%; height: 200px; border: 1px solid gray; margin-top: 10px;   }
+.msgheader { background-color: gray; padding-top: 0.5em; padding-bottom: 0.5em; color: white; }
+.uploadmain { width: 45%; }
+#dropTarget { background-color: grey; height: 200px; line-height: 200px; text-align: center; font-size: 30px; margin-top: 10px; color: white; }
+.progressbgr { margin-top: 10px; border: 1px solid red; }
+#progressBar {width: 0%; color: white; background-color: red; text-align: right; }
+#previewmain { width: 45%; border: 1px solid gray; float: right; }
+#previewimg {width: 100%; }
+</style>
+<script>
+function resetDropArea(div)
+{
+	div.style.backgroundColor = "grey";
+	div.innerHTML = "select OR drop image here";
+}
+function onMouseOver(div)
+{
+	div.style.backgroundColor = "blue";
+}
+function onDragOver(div)
+{
+	div.style.backgroundColor = "green";
+	div.innerHTML = "yes, just drop it!";
+}
+</script>
+</head>
+<body>
+
+
+<div id="previewmain"><img id="previewimg" src="" /></div>
+<div class="uploadmain">
+	<div ondragover="onDragOver(this)" ondragleave="resetDropArea(this)" onmouseover="onMouseOver(this)" onmouseout="resetDropArea(this)" id="dropTarget">
+		select OR drop image here
+	</div>
+	<div class="progressbgr">
+		<div id="progressBar">a</div>
+	</div>
+</div>
+
+<div class="msgmain"> 
+	<div class="msgheader">MESSAGE:</div> <div id="msgboard"> </div> 
+</div>
+
+
+<script>
+var r = new Resumable({
+  target:'u2.php',
+  chunkSize: 10*1024,
+  maxFiles: 1,
+  fileType: ["jpeg", "jpg", "png"]
+});
+if( !r.support )
+{
+	alert("not support");
+}
+  
+//r.assignBrowse(document.getElementById('browseButton'));
+r.assignBrowse(document.getElementById('dropTarget'));
+r.assignDrop(document.getElementById('dropTarget'));
+
+r.on('fileSuccess', function(file){
+    console.debug(file.fileName + " complete.");
+    document.getElementById("msgboard").innerHTML += ("<br/>" + file.fileName + " complete.")
+  });
+r.on('fileProgress', function(file){
+    console.debug(file);
+    //document.getElementById("progressDiv").innerHTML = (Math.floor(r.progress(true)*100) + "%");
+    var bar = document.getElementById("progressBar")
+    var progress = Math.floor(r.progress(true)*100);
+    bar.style.width = (progress + "%");
+    bar.innerHTML = (progress + "%");
+  });
+r.on('fileAdded', function(file, event){
+    //r.upload();
+    console.debug(file, event);
+    console.debug(file.type);
+    console.debug(r.files);
+    var preview = document.getElementById("previewimg");
+    var reader = new FileReader();
+    reader.onload = function(e) {
+	preview.setAttribute("src", e.target.result);
+    }
+    //alert( reader );
+    reader.readAsDataURL( file.file );
+  });
+r.on('filesAdded', function(array){
+    //console.debug(array);
+  });
+r.on('fileRetry', function(file){
+    //console.debug(file);
+  });
+r.on('fileError', function(file, message){
+    //console.debug(file, message);
+    document.getElementById("msgboard").innerHTML += ("<br/>" + file.fileName + " error.")
+  });
+r.on('uploadStart', function(){
+    //console.debug();
+  });
+r.on('complete', function(){
+    //console.debug();
+  });
+r.on('progress', function(){
+    //console.debug();
+  });
+r.on('error', function(message, file){
+    //console.debug(message, file);
+  });
+r.on('pause', function(){
+    //console.debug();
+  });
+r.on('cancel', function(){
+    //console.debug();
+  });
+</script>
+
+</body>
+</html>
+
+
